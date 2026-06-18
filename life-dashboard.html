@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="life dashboard">
+    <meta name="theme-color" content="#6a2b54">
+    <title>life dashboard</title>
+    
+    <link rel="manifest" href="data:application/json,{%22name%22:%22life%20dashboard%22,%22short_name%22:%22dashboard%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23fff%22,%22theme_color%22:%22%236a2b54%22,%22icons%22:[{%22src%22:%22data:image/svg+xml;utf8,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%20192%20192%27%3E%3Cdefs%3E%3ClinearGradient%20id=%27g%27%20x1=%270%27%20y1=%270%27%20x2=%271%27%20y2=%271%27%3E%3Cstop%20offset=%270%25%27%20stop-color=%27%23ff4fa3%27/%3E%3Cstop%20offset=%2750%25%27%20stop-color=%27%23a06cff%27/%3E%3Cstop%20offset=%27100%25%27%20stop-color=%27%2327cdbb%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width=%27192%27%20height=%27192%27%20rx=%2742%27%20fill=%27url(%23g)%27/%3E%3Ctext%20x=%2750%25%27%20y=%2755%25%27%20text-anchor=%27middle%27%20font-size=%27100%27%20font-family=%27system-ui%27%20font-weight=%27800%27%20fill=%27white%27%3E✨%3C/text%3E%3C/svg%3E%22,%22sizes%22:%22192x192%22,%22type%22:%22image/svg+xml%22,%22purpose%22:%22any%22}]}">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&family=Outfit:wght@300;400;500&display=swap');
+        
+        :root {
+            --ink: #6a2b54;
+            --muted: #b07a98;
+            --paper: #fff;
+            --cl: #ff4fa3;
+            --ct: #a06cff;
+            --re: #27cdbb;
+            --gold: #ffce4d;
+            --light-pink: #ffe1f0;
+            --light-purple: #e7dcff;
+            --light-teal: #d6fff7;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            -webkit-font-smoothing: antialiased;
+            -webkit-touch-callout: none;
+        }
+
+        body {
+            color: var(--ink);
+            line-height: 1.5;
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: radial-gradient(circle at 10% 6%, var(--light-pink) 0, rgba(255, 225, 240, 0) 40%),
+                        radial-gradient(circle at 92% 8%, var(--light-purple) 0, rgba(231, 220, 255, 0) 38%),
+                        radial-gradient(circle at 50% 100%, var(--light-teal) 0, rgba(214, 255, 247, 0) 45%),
+                        linear-gradient(180deg, #fff2f8 0%, #ffeaf4 100%);
+            background-attachment: fixed;
+            padding-bottom: 80px;
+        }
+
+        .wrap {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px 18px 70px;
+        }
+
+        h1 {
+            font-family: 'Jost', sans-serif;
+            font-size: clamp(28px, 8vw, 38px);
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            text-transform: lowercase;
+            margin: 0 0 8px 0;
+            background: linear-gradient(90deg, #ff5fb0, #a06cff 55%, #27cdbb);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 14px rgba(255, 95, 176, 0.18);
+        }
+
+        .tagline {
+            color: var(--muted);
+            text-transform: lowercase;
+            font-size: 13px;
+            margin: 0 0 20px 0;
+            font-weight: 600;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            border-bottom: 2px solid rgba(255, 225, 240, 0.6);
+            padding-bottom: 12px;
+        }
+
+        .tab-btn {
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            font-family: 'Jost', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: lowercase;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            letter-spacing: 0.3px;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 95, 176, 0.1);
+            color: var(--ink);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(120deg, #ff5fb0, #a06cff);
+            color: white;
+            box-shadow: 0 4px 12px rgba(160, 108, 255, 0.3);
+        }
+
+        .content {
+            display: none;
+        }
+
+        .content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Calendar */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-header h2 {
+            font-family: 'Jost', sans-serif;
+            font-size: 24px;
+            margin: 0;
+            background: linear-gradient(90deg, #ff5fb0, #a06cff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .cal-nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .cal-btn {
+            border: 2px solid var(--muted);
+            background: white;
+            color: var(--ink);
+            padding: 8px 14px;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: lowercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cal-btn:active {
+            background: linear-gradient(120deg, #ff5fb0, #a06cff);
+            border-color: transparent;
+            color: white;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .day-cell {
+            background: white;
+            border: 2px solid #ffe0ee;
+            border-radius: 14px;
+            padding: 12px;
+            min-height: 140px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(255, 95, 176, 0.08);
+        }
+
+        .day-cell:active {
+            border-color: var(--cl);
+            background: rgba(255, 79, 163, 0.05);
+            box-shadow: 0 6px 16px rgba(255, 95, 176, 0.14);
+        }
+
+        .day-header {
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 8px;
+            font-size: 13px;
+            text-transform: lowercase;
+        }
+
+        .day-events {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .event-item {
+            background: rgba(255, 79, 163, 0.15);
+            padding: 6px 8px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            border-left: 2px solid var(--cl);
+            word-break: break-word;
+        }
+
+        /* To-Do */
+        .todo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .todo-card {
+            background: white;
+            border: 2px solid #ffe0ee;
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(255, 95, 176, 0.08);
+        }
+
+        .todo-card h3 {
+            font-family: 'Jost', sans-serif;
+            font-size: 16px;
+            margin: 0 0 14px 0;
+            color: var(--ink);
+            text-transform: lowercase;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .add-btn {
+            border: none;
+            background: linear-gradient(120deg, #ff5fb0, #a06cff);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: lowercase;
+        }
+
+        .add-btn:active {
+            transform: scale(0.98);
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(255, 79, 163, 0.08);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 3px solid var(--cl);
+        }
+
+        .todo-item input[type="checkbox"] {
+            margin-top: 4px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--cl);
+        }
+
+        .todo-item.done {
+            opacity: 0.6;
+        }
+
+        .todo-item.done label {
+            text-decoration: line-through;
+        }
+
+        .todo-item label {
+            flex: 1;
+            cursor: pointer;
+            font-size: 13px;
+            word-break: break-word;
+        }
+
+        /* Section */
+        .section {
+            margin-bottom: 24px;
+        }
+
+        .section-header {
+            font-family: 'Jost', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: lowercase;
+            margin: 20px 0 14px 0;
+            color: var(--ink);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .section-header.cl { color: var(--cl); }
+        .section-header.ct { color: var(--ct); }
+        .section-header.re { color: var(--re); }
+
+        /* Details / Collapsible */
+        details {
+            background: white;
+            border-radius: 12px;
+            margin: 8px 0;
+            border: 2px solid #ffe0ee;
+            border-left: 6px solid #ffb3d6;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(255, 95, 176, 0.08);
+        }
+
+        details.cl { border-left-color: var(--cl); }
+        details.ct { border-left-color: var(--ct); }
+        details.re { border-left-color: var(--re); }
+
+        details[open] {
+            box-shadow: 0 6px 16px rgba(160, 108, 255, 0.15);
+        }
+
+        summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: lowercase;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::after {
+            content: '▸';
+            color: var(--muted);
+            margin-left: auto;
+            transition: transform 0.3s ease;
+        }
+
+        details[open] summary::after {
+            transform: rotate(90deg);
+        }
+
+        .tag {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: lowercase;
+            padding: 3px 8px;
+            border-radius: 12px;
+            white-space: nowrap;
+        }
+
+        .tag.cl { background: #ffdcee; color: #d61f7f; }
+        .tag.ct { background: #eadcff; color: #7a40e0; }
+        .tag.re { background: #cdf6f0; color: #119b8b; }
+
+        .pill {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 12px;
+            white-space: nowrap;
+            text-transform: lowercase;
+            background: #f0f0f0;
+            color: var(--ink);
+        }
+
+        .details-body {
+            padding: 14px 16px;
+            border-top: 1px solid #ffe0ee;
+            background: rgba(255, 225, 240, 0.3);
+            font-size: 13px;
+        }
+
+        .details-meta {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            font-size: 11px;
+            color: var(--muted);
+            text-transform: lowercase;
+        }
+
+        .details-body ul {
+            margin: 8px 0;
+            padding-left: 18px;
+        }
+
+        .details-body li {
+            margin-bottom: 4px;
+            font-size: 12px;
+        }
+
+        /* Finance Cards */
+        .finance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-top: 14px;
+        }
+
+        .card {
+            background: white;
+            border: 2px solid #ffe0ee;
+            border-radius: 14px;
+            padding: 14px;
+            box-shadow: 0 2px 8px rgba(255, 95, 176, 0.08);
+        }
+
+        .card h4 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: lowercase;
+            color: var(--ink);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Progress Meter */
+        .progress-section {
+            margin-top: 12px;
+        }
+
+        .progress-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ink);
+            text-transform: lowercase;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #ffe0ee;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff5fb0, #a06cff);
+            transition: width 0.3s ease;
+        }
+
+        .amount-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(255, 225, 240, 0.4);
+            border-radius: 8px;
+            text-transform: lowercase;
+        }
+
+        .amount-label {
+            color: var(--muted);
+        }
+
+        .amount-value {
+            color: var(--ink);
+            font-weight: 700;
+        }
+
+        /* Input */
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ffe0ee;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            color: var(--ink);
+            background: white;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--cl);
+            background: rgba(255, 79, 163, 0.05);
+            box-shadow: 0 0 0 2px rgba(255, 79, 163, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #ffe0ee;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            padding-bottom: max(8px, env(safe-area-inset-bottom));
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
+            z-index: 100;
+        }
+
+        .nav-btn {
+            flex: 1;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: lowercase;
+            cursor: pointer;
+            padding: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn.active {
+            color: var(--cl);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .wrap {
+                padding: 20px 14px 70px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .calendar-grid {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }
+
+            .day-cell {
+                min-height: 120px;
+                padding: 10px;
+            }
+
+            .finance-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .todo-grid {
+                grid-template-columns: 1fr;
+            }
+
+            summary {
+                font-size: 12px;
+                padding: 10px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <h1>life dashboard</h1>
+        <div class="tagline">summer 2026</div>
+
+        <div class="nav-tabs">
+            <button class="tab-btn active" data-tab="home">home</button>
+            <button class="tab-btn" data-tab="school">school</button>
+            <button class="tab-btn" data-tab="finances">finances</button>
+            <button class="tab-btn" data-tab="loan">loan rehab</button>
+            <button class="tab-btn" data-tab="apartment">apartment</button>
+        </div>
+
+        <!-- HOME -->
+        <div id="home" class="content active">
+            <div class="calendar-header">
+                <h2>📅 next 2 weeks</h2>
+                <div class="cal-nav">
+                    <button class="cal-btn" onclick="prevWeek()">← prev</button>
+                    <button class="cal-btn" onclick="nextWeek()">next →</button>
+                </div>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+
+            <div class="todo-grid">
+                <div class="todo-card">
+                    <h3>✨ life to-do <button class="add-btn" onclick="addTodo('life')">+ add</button></h3>
+                    <div id="lifeTodos"></div>
+                </div>
+                <div class="todo-card">
+                    <h3>⚡ quick wins <button class="add-btn" onclick="addTodo('wins')">+ add</button></h3>
+                    <div id="winsTodos"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCHOOL -->
+        <div id="school" class="content">
+            <div class="calendar-header">
+                <h2>📚 school</h2>
+                <div class="cal-nav">
+                    <button class="cal-btn" onclick="prevSchoolWeek()">← prev</button>
+                    <button class="cal-btn" onclick="nextSchoolWeek()">next →</button>
+                </div>
+            </div>
+            <div id="schoolContent"></div>
+        </div>
+
+        <!-- FINANCES -->
+        <div id="finances" class="content">
+            <h2 style="font-family: 'Jost', sans-serif; font-size: 24px; margin-bottom: 16px; color: var(--ink);">💰 finances</h2>
+
+            <div class="section">
+                <div class="section-header">bills</div>
+                <div class="finance-grid">
+                    <div class="card">
+                        <h4>monthly auto-draft <button class="add-btn" onclick="addBill()">+ add</button></h4>
+                        <div id="billsList"></div>
+                    </div>
+                    <div class="card">
+                        <h4>current balances</h4>
+                        <div id="balancesDisplay"></div>
+                        <button class="add-btn" style="width: 100%; margin-top: 10px;" onclick="editBalances()">update</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">debt paydown</div>
+                <div id="debtMeters"></div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">savings goals</div>
+                <div id="savingsMeters"></div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">car</div>
+                <div id="carExpenses"></div>
+                <details style="margin-top: 10px;">
+                    <summary>add car expense</summary>
+                    <div class="details-body">
+                        <input type="text" placeholder="part name" id="carPartName">
+                        <input type="number" placeholder="cost" id="carPartCost">
+                        <button class="add-btn" style="width: 100%;" onclick="addCarExpense()">add</button>
+                    </div>
+                </details>
+            </div>
+        </div>
+
+        <!-- LOAN REHAB -->
+        <div id="loan" class="content">
+            <h2 style="font-family: 'Jost', sans-serif; font-size: 24px; margin-bottom: 16px; color: var(--ink);">🎯 loan rehab</h2>
+            <div class="progress-section">
+                <div class="progress-label">
+                    <span>overall progress</span>
+                    <span id="loanProgress">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="loanProgressBar" style="width: 0%"></div>
+                </div>
+            </div>
+            <div id="loanMilestones"></div>
+            <details style="margin-top: 16px;">
+                <summary>+ add milestone</summary>
+                <div class="details-body">
+                    <input type="text" placeholder="milestone name" id="newMilestoneName">
+                    <input type="date" id="newMilestoneDate">
+                    <textarea placeholder="description" id="newMilestoneDesc"></textarea>
+                    <button class="add-btn" style="width: 100%;" onclick="addMilestone()">add</button>
+                </div>
+            </details>
+        </div>
+
+        <!-- APARTMENT -->
+        <div id="apartment" class="content">
+            <h2 style="font-family: 'Jost', sans-serif; font-size: 24px; margin-bottom: 16px; color: var(--ink);">🏠 apartment (target: sept 1)</h2>
+            <div class="progress-section">
+                <div class="progress-label">
+                    <span>timeline</span>
+                    <span id="apartmentProgress">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="apartmentProgressBar" style="width: 0%"></div>
+                </div>
+            </div>
+            <div id="apartmentTasks"></div>
+            <details style="margin-top: 16px;">
+                <summary>+ add task</summary>
+                <div class="details-body">
+                    <input type="text" placeholder="task name" id="newApartmentTaskName">
+                    <input type="date" id="newApartmentTaskDate">
+                    <textarea placeholder="notes" id="newApartmentTaskNotes"></textarea>
+                    <button class="add-btn" style="width: 100%;" onclick="addApartmentTask()">add</button>
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="nav-btn active" onclick="switchTab('home')">home</button>
+        <button class="nav-btn" onclick="switchTab('school')">school</button>
+        <button class="nav-btn" onclick="switchTab('finances')">finances</button>
+        <button class="nav-btn" onclick="switchTab('loan')">loan</button>
+        <button class="nav-btn" onclick="switchTab('apartment')">apt</button>
+    </div>
+
+    <script>
+        // Data & Storage
+        const store = {
+            lifeTodos: JSON.parse(localStorage.getItem('lifeTodos')) || [],
+            winsTodos: JSON.parse(localStorage.getItem('winsTodos')) || [],
+            bills: JSON.parse(localStorage.getItem('bills')) || [
+                { name: 'Claude', amount: 100, due: '1st' },
+                { name: 'Peacock', amount: 10, due: '6th' },
+                { name: 'iCloud', amount: 9.99, due: '8th' },
+            ],
+            balances: JSON.parse(localStorage.getItem('balances')) || { checking: 0, savings: 0, safe: 0 },
+            debts: JSON.parse(localStorage.getItem('debts')) || [],
+            savingsGoals: JSON.parse(localStorage.getItem('savingsGoals')) || [],
+            carExpenses: JSON.parse(localStorage.getItem('carExpenses')) || [],
+            loanMilestones: JSON.parse(localStorage.getItem('loanMilestones')) || [
+                { name: 'Step 1: Initial assessment', date: '2026-06-19', desc: 'Gather docs & current status', done: false }
+            ],
+            apartmentTasks: JSON.parse(localStorage.getItem('apartmentTasks')) || [
+                { name: 'Research neighborhoods', date: '2026-07-15', notes: 'Lake County focus', done: false }
+            ],
+            assignments: []
+        };
+
+        let currentCalendarWeek = getStartOfWeek(new Date());
+        let currentSchoolWeek = 1;
+
+        function save() {
+            localStorage.setItem('lifeTodos', JSON.stringify(store.lifeTodos));
+            localStorage.setItem('winsTodos', JSON.stringify(store.winsTodos));
+            localStorage.setItem('bills', JSON.stringify(store.bills));
+            localStorage.setItem('balances', JSON.stringify(store.balances));
+            localStorage.setItem('debts', JSON.stringify(store.debts));
+            localStorage.setItem('savingsGoals', JSON.stringify(store.savingsGoals));
+            localStorage.setItem('carExpenses', JSON.stringify(store.carExpenses));
+            localStorage.setItem('loanMilestones', JSON.stringify(store.loanMilestones));
+            localStorage.setItem('apartmentTasks', JSON.stringify(store.apartmentTasks));
+        }
+
+        function getStartOfWeek(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            return new Date(d.setDate(diff));
+        }
+
+        // Calendar
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+            
+            for (let i = 0; i < 14; i++) {
+                const date = new Date(currentCalendarWeek);
+                date.setDate(date.getDate() + i);
+                
+                const dateStr = date.toISOString().split('T')[0];
+                const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                const dayNum = date.getDate();
+                
+                const cell = document.createElement('div');
+                cell.className = 'day-cell';
+                cell.innerHTML = `<div class="day-header">${dayName} ${dayNum}</div><div class="day-events"></div>`;
+                grid.appendChild(cell);
+            }
+        }
+
+        function prevWeek() {
+            currentCalendarWeek.setDate(currentCalendarWeek.getDate() - 7);
+            renderCalendar();
+        }
+
+        function nextWeek() {
+            currentCalendarWeek.setDate(currentCalendarWeek.getDate() + 7);
+            renderCalendar();
+        }
+
+        // School course data — edit assignments here each term
+        const courses = {
+            cl: {
+                label: '📖 contract law',
+                colorClass: 'cl',
+                weeks: {
+                    1: [
+                        { name: 'Discussion: offer & acceptance', due: '2026-06-23', points: 25, type: 'discussion' },
+                        { name: 'Ch. 1–2 reading quiz', due: '2026-06-24', points: 10, type: 'quiz' },
+                    ],
+                    2: [
+                        { name: 'Discussion: consideration doctrine', due: '2026-06-30', points: 25, type: 'discussion' },
+                        { name: 'Ch. 3–4 reading quiz', due: '2026-07-01', points: 10, type: 'quiz' },
+                        { name: 'Contract analysis essay #1', due: '2026-07-02', points: 100, type: 'essay' },
+                    ],
+                    3: [
+                        { name: 'Discussion: capacity & legality', due: '2026-07-07', points: 25, type: 'discussion' },
+                        { name: 'Midterm review quiz', due: '2026-07-08', points: 20, type: 'quiz' },
+                    ],
+                    4: [
+                        { name: 'Midterm exam', due: '2026-07-14', points: 150, type: 'exam' },
+                    ],
+                    5: [
+                        { name: 'Discussion: breach of contract', due: '2026-07-21', points: 25, type: 'discussion' },
+                        { name: 'Ch. 7–8 reading quiz', due: '2026-07-22', points: 10, type: 'quiz' },
+                    ],
+                    6: [
+                        { name: 'Discussion: remedies', due: '2026-07-28', points: 25, type: 'discussion' },
+                        { name: 'Contract analysis essay #2', due: '2026-07-30', points: 100, type: 'essay' },
+                    ],
+                    7: [
+                        { name: 'Discussion: UCC & sales contracts', due: '2026-08-04', points: 25, type: 'discussion' },
+                        { name: 'Ch. 10–11 reading quiz', due: '2026-08-05', points: 10, type: 'quiz' },
+                    ],
+                    8: [
+                        { name: 'Final exam', due: '2026-08-12', points: 200, type: 'exam' },
+                    ],
+                }
+            },
+            ct: {
+                label: '🎨 critical thinking',
+                colorClass: 'ct',
+                weeks: {
+                    1: [
+                        { name: 'Intro discussion: what is critical thinking?', due: '2026-06-23', points: 20, type: 'discussion' },
+                        { name: 'Module 1 quiz', due: '2026-06-25', points: 15, type: 'quiz' },
+                    ],
+                    2: [
+                        { name: 'Discussion: identifying arguments', due: '2026-06-30', points: 20, type: 'discussion' },
+                        { name: 'Argument mapping exercise', due: '2026-07-01', points: 30, type: 'assignment' },
+                    ],
+                    3: [
+                        { name: 'Discussion: logical fallacies', due: '2026-07-07', points: 20, type: 'discussion' },
+                        { name: 'Fallacy identification worksheet', due: '2026-07-08', points: 30, type: 'assignment' },
+                    ],
+                    4: [
+                        { name: 'Midterm: argument analysis paper', due: '2026-07-15', points: 150, type: 'essay' },
+                    ],
+                    5: [
+                        { name: 'Discussion: bias & cognitive errors', due: '2026-07-21', points: 20, type: 'discussion' },
+                        { name: 'Module 5 quiz', due: '2026-07-22', points: 15, type: 'quiz' },
+                    ],
+                    6: [
+                        { name: 'Discussion: evaluating sources', due: '2026-07-28', points: 20, type: 'discussion' },
+                        { name: 'Source evaluation assignment', due: '2026-07-29', points: 40, type: 'assignment' },
+                    ],
+                    7: [
+                        { name: 'Discussion: applied decision-making', due: '2026-08-04', points: 20, type: 'discussion' },
+                        { name: 'Module 7 quiz', due: '2026-08-05', points: 15, type: 'quiz' },
+                    ],
+                    8: [
+                        { name: 'Final: critical analysis essay', due: '2026-08-12', points: 200, type: 'essay' },
+                    ],
+                }
+            },
+            re: {
+                label: '🏡 real estate',
+                colorClass: 're',
+                weeks: {
+                    1: [
+                        { name: 'Discussion: intro to real estate', due: '2026-06-23', points: 20, type: 'discussion' },
+                        { name: 'Ch. 1 quiz', due: '2026-06-24', points: 10, type: 'quiz' },
+                    ],
+                    2: [
+                        { name: 'Discussion: property rights & ownership', due: '2026-06-30', points: 20, type: 'discussion' },
+                        { name: 'Ch. 2–3 quiz', due: '2026-07-01', points: 10, type: 'quiz' },
+                    ],
+                    3: [
+                        { name: 'Discussion: financing basics', due: '2026-07-07', points: 20, type: 'discussion' },
+                        { name: 'Mortgage math worksheet', due: '2026-07-08', points: 30, type: 'assignment' },
+                    ],
+                    4: [
+                        { name: 'Midterm exam', due: '2026-07-14', points: 150, type: 'exam' },
+                    ],
+                    5: [
+                        { name: 'Discussion: agency relationships', due: '2026-07-21', points: 20, type: 'discussion' },
+                        { name: 'Ch. 7 quiz', due: '2026-07-22', points: 10, type: 'quiz' },
+                    ],
+                    6: [
+                        { name: 'Discussion: contracts in real estate', due: '2026-07-28', points: 20, type: 'discussion' },
+                        { name: 'Listing agreement analysis', due: '2026-07-30', points: 50, type: 'assignment' },
+                    ],
+                    7: [
+                        { name: 'Discussion: fair housing laws', due: '2026-08-04', points: 20, type: 'discussion' },
+                        { name: 'Ch. 10 quiz', due: '2026-08-05', points: 10, type: 'quiz' },
+                    ],
+                    8: [
+                        { name: 'Final exam', due: '2026-08-12', points: 200, type: 'exam' },
+                    ],
+                }
+            }
+        };
+
+        const typeColors = {
+            discussion: { bg: '#fff0f7', border: '#ff4fa3', text: '#c01870' },
+            quiz:       { bg: '#f3eeff', border: '#a06cff', text: '#6930c3' },
+            essay:      { bg: '#e6fff9', border: '#27cdbb', text: '#118a7e' },
+            exam:       { bg: '#fff3e0', border: '#ffb347', text: '#c47900' },
+            assignment: { bg: '#f0f7ff', border: '#4fa3ff', text: '#1860c0' },
+        };
+
+        const doneAssignments = JSON.parse(localStorage.getItem('doneAssignments')) || {};
+
+        function toggleAssignment(key) {
+            doneAssignments[key] = !doneAssignments[key];
+            localStorage.setItem('doneAssignments', JSON.stringify(doneAssignments));
+            renderSchool();
+        }
+
+        function renderSchool() {
+            const content = document.getElementById('schoolContent');
+            const week1 = currentSchoolWeek;
+            const week2 = currentSchoolWeek + 1;
+
+            const renderCourse = (courseKey) => {
+                const course = courses[courseKey];
+                const assignments = [...(course.weeks[week1] || []), ...(course.weeks[week2] || [])];
+                if (assignments.length === 0) {
+                    return `<div class="section">
+                        <div class="section-header ${course.colorClass}">${course.label}</div>
+                        <p style="color: var(--muted); font-size: 13px; padding: 0 4px;">no assignments for weeks ${week1}–${week2}</p>
+                    </div>`;
+                }
+                const items = assignments.map((a, idx) => {
+                    const key = `${courseKey}-w${week1}-${idx}`;
+                    const done = !!doneAssignments[key];
+                    const tc = typeColors[a.type] || typeColors.assignment;
+                    const formatted = new Date(a.due + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                    return `
+                        <details class="${course.colorClass}" style="margin-bottom: 8px;">
+                            <summary>
+                                <input type="checkbox" ${done ? 'checked' : ''} onclick="event.stopPropagation(); toggleAssignment('${key}')" style="margin-right: 8px; accent-color: var(--${course.colorClass});">
+                                <span style="flex:1; ${done ? 'text-decoration:line-through; opacity:0.55;' : ''}">${a.name}</span>
+                                <span class="pill" style="background:${tc.bg}; color:${tc.text}; border: 1px solid ${tc.border};">${a.type}</span>
+                            </summary>
+                            <div class="details-body">
+                                <div class="details-meta">
+                                    <span class="meta-item">📅 due ${formatted}</span>
+                                    <span class="meta-item">⭐ ${a.points} pts</span>
+                                </div>
+                            </div>
+                        </details>`;
+                }).join('');
+                const total = assignments.length;
+                const done2 = assignments.filter((a, idx) => doneAssignments[`${courseKey}-w${week1}-${idx}`]).length;
+                return `<div class="section">
+                    <div class="section-header ${course.colorClass}">${course.label} <span class="pill" style="font-size:10px;">${done2}/${total} done</span></div>
+                    ${items}
+                </div>`;
+            };
+
+            content.innerHTML = renderCourse('cl') + renderCourse('ct') + renderCourse('re');
+        }
+
+        function prevSchoolWeek() {
+            currentSchoolWeek = Math.max(1, currentSchoolWeek - 2);
+            renderSchool();
+        }
+
+        function nextSchoolWeek() {
+            currentSchoolWeek = Math.min(8, currentSchoolWeek + 2);
+            renderSchool();
+        }
+
+        // To-Do
+        function addTodo(type) {
+            const text = prompt('new task:');
+            if (!text) return;
+            const arr = type === 'life' ? store.lifeTodos : store.winsTodos;
+            arr.push({ text, done: false });
+            save();
+            renderTodos();
+        }
+
+        function renderTodos() {
+            const life = document.getElementById('lifeTodos');
+            const wins = document.getElementById('winsTodos');
+            
+            life.innerHTML = store.lifeTodos.map((t, i) => `
+                <div class="todo-item ${t.done ? 'done' : ''}">
+                    <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodo('life', ${i})">
+                    <label>${t.text}</label>
+                </div>
+            `).join('');
+            
+            wins.innerHTML = store.winsTodos.map((t, i) => `
+                <div class="todo-item ${t.done ? 'done' : ''}">
+                    <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodo('wins', ${i})">
+                    <label>${t.text}</label>
+                </div>
+            `).join('');
+        }
+
+        function toggleTodo(type, i) {
+            const arr = type === 'life' ? store.lifeTodos : store.winsTodos;
+            arr[i].done = !arr[i].done;
+            save();
+            renderTodos();
+        }
+
+        // Bills
+        function addBill() {
+            const name = prompt('bill name:');
+            if (!name) return;
+            const amount = prompt('amount:');
+            const due = prompt('due (e.g., 15th):');
+            store.bills.push({ name, amount: parseFloat(amount) || 0, due });
+            save();
+            renderFinances();
+        }
+
+        function renderBills() {
+            const list = document.getElementById('billsList');
+            list.innerHTML = store.bills.map(b => `
+                <details class="re" style="margin-bottom: 8px;">
+                    <summary><span style="flex: 1;">${b.name}</span><span class="pill" style="background: rgba(39, 205, 187, 0.2); color: #119b8b;">$${b.amount} · ${b.due}</span></summary>
+                    <div class="details-body">
+                        <p style="margin: 0; font-size: 12px;">Amount: $${b.amount} | Due: ${b.due}</p>
+                    </div>
+                </details>
+            `).join('');
+        }
+
+        // Finance render
+        function renderFinances() {
+            renderBills();
+            renderBalances();
+            renderDebtMeters();
+            renderSavingsMeters();
+            renderCarExpenses();
+        }
+
+        function renderBalances() {
+            const display = document.getElementById('balancesDisplay');
+            display.innerHTML = `
+                <div class="amount-row">
+                    <span class="amount-label">checking</span>
+                    <span class="amount-value">$${store.balances.checking || 0}</span>
+                </div>
+                <div class="amount-row">
+                    <span class="amount-label">savings</span>
+                    <span class="amount-value">$${store.balances.savings || 0}</span>
+                </div>
+                <div class="amount-row">
+                    <span class="amount-label">safe</span>
+                    <span class="amount-value">$${store.balances.safe || 0}</span>
+                </div>
+            `;
+        }
+
+        function editBalances() {
+            const checking = prompt('checking balance:', store.balances.checking);
+            if (checking !== null) store.balances.checking = parseFloat(checking) || 0;
+            const savings = prompt('savings balance:', store.balances.savings);
+            if (savings !== null) store.balances.savings = parseFloat(savings) || 0;
+            const safe = prompt('safe balance:', store.balances.safe);
+            if (safe !== null) store.balances.safe = parseFloat(safe) || 0;
+            save();
+            renderFinances();
+        }
+
+        function renderDebtMeters() {
+            const container = document.getElementById('debtMeters');
+            if (store.debts.length === 0) {
+                container.innerHTML = '<details style="margin-bottom: 10px;"><summary>+ add debt</summary><div class="details-body"><input type="text" placeholder="debt name" id="newDebtName"><input type="number" placeholder="current balance" id="newDebtBalance"><input type="number" placeholder="original balance" id="newDebtOriginal"><button class="add-btn" style="width: 100%;" onclick="addDebt()">add</button></div></details>';
+            } else {
+                container.innerHTML = store.debts.map((d, i) => {
+                    const progress = (d.original - d.balance) / d.original * 100;
+                    return `
+                        <div class="card">
+                            <h4>${d.name}</h4>
+                            <div class="amount-row">
+                                <span class="amount-label">remaining</span>
+                                <span class="amount-value">$${d.balance}</span>
+                            </div>
+                            <div class="progress-label">
+                                <span>paydown</span>
+                                <span>${Math.round(progress)}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progress}%; background: linear-gradient(90deg, #ff5fb0, #a06cff);"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('') + '<details style="margin-top: 10px;"><summary>+ add debt</summary><div class="details-body"><input type="text" placeholder="debt name" id="newDebtName"><input type="number" placeholder="current balance" id="newDebtBalance"><input type="number" placeholder="original balance" id="newDebtOriginal"><button class="add-btn" style="width: 100%;" onclick="addDebt()">add</button></div></details>';
+            }
+        }
+
+        function addDebt() {
+            const name = document.getElementById('newDebtName').value;
+            const balance = parseFloat(document.getElementById('newDebtBalance').value) || 0;
+            const original = parseFloat(document.getElementById('newDebtOriginal').value) || balance;
+            if (!name) return;
+            store.debts.push({ name, balance, original });
+            save();
+            renderFinances();
+        }
+
+        function renderSavingsMeters() {
+            const container = document.getElementById('savingsMeters');
+            if (store.savingsGoals.length === 0) {
+                container.innerHTML = '<details style="margin-bottom: 10px;"><summary>+ add savings goal</summary><div class="details-body"><input type="text" placeholder="goal name" id="newSavingsName"><input type="number" placeholder="current amount" id="newSavingsAmount"><input type="number" placeholder="target amount" id="newSavingsTarget"><button class="add-btn" style="width: 100%;" onclick="addSavingsGoal()">add</button></div></details>';
+            } else {
+                container.innerHTML = store.savingsGoals.map((g, i) => {
+                    const progress = g.amount / g.target * 100;
+                    return `
+                        <div class="card">
+                            <h4>${g.name}</h4>
+                            <div class="amount-row">
+                                <span class="amount-label">saved</span>
+                                <span class="amount-value">$${g.amount}</span>
+                            </div>
+                            <div class="amount-row">
+                                <span class="amount-label">target</span>
+                                <span class="amount-value">$${g.target}</span>
+                            </div>
+                            <div class="progress-label">
+                                <span>progress</span>
+                                <span>${Math.round(progress)}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progress}%; background: linear-gradient(90deg, #27cdbb, #7be3d6);"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('') + '<details style="margin-top: 10px;"><summary>+ add savings goal</summary><div class="details-body"><input type="text" placeholder="goal name" id="newSavingsName"><input type="number" placeholder="current amount" id="newSavingsAmount"><input type="number" placeholder="target amount" id="newSavingsTarget"><button class="add-btn" style="width: 100%;" onclick="addSavingsGoal()">add</button></div></details>';
+            }
+        }
+
+        function addSavingsGoal() {
+            const name = document.getElementById('newSavingsName').value;
+            const amount = parseFloat(document.getElementById('newSavingsAmount').value) || 0;
+            const target = parseFloat(document.getElementById('newSavingsTarget').value) || 0;
+            if (!name || !target) return;
+            store.savingsGoals.push({ name, amount, target });
+            save();
+            renderFinances();
+        }
+
+        function renderCarExpenses() {
+            const container = document.getElementById('carExpenses');
+            if (store.carExpenses.length === 0) {
+                container.innerHTML = '<p style="color: var(--muted); font-size: 13px;">no car expenses yet</p>';
+            } else {
+                let total = store.carExpenses.reduce((sum, e) => sum + e.cost, 0);
+                container.innerHTML = store.carExpenses.map(e => `
+                    <div class="card" style="margin-bottom: 10px;">
+                        <h4>${e.name}</h4>
+                        <div class="amount-row">
+                            <span class="amount-label">cost</span>
+                            <span class="amount-value">$${e.cost}</span>
+                        </div>
+                    </div>
+                `).join('') + `<div class="card" style="background: rgba(255, 79, 163, 0.1); border-color: var(--cl);"><div class="amount-row"><span class="amount-label">total</span><span class="amount-value">$${total}</span></div></div>`;
+            }
+        }
+
+        function addCarExpense() {
+            const name = document.getElementById('carPartName').value;
+            const cost = parseFloat(document.getElementById('carPartCost').value) || 0;
+            if (!name) return;
+            store.carExpenses.push({ name, cost });
+            document.getElementById('carPartName').value = '';
+            document.getElementById('carPartCost').value = '';
+            save();
+            renderFinances();
+        }
+
+        // Loan Rehab
+        function renderLoanMilestones() {
+            const container = document.getElementById('loanMilestones');
+            const total = store.loanMilestones.length;
+            const done = store.loanMilestones.filter(m => m.done).length;
+            const progress = total > 0 ? done / total * 100 : 0;
+            
+            document.getElementById('loanProgress').textContent = Math.round(progress) + '%';
+            document.getElementById('loanProgressBar').style.width = progress + '%';
+            
+            container.innerHTML = store.loanMilestones.map((m, i) => `
+                <details style="margin-bottom: 10px;">
+                    <summary>
+                        <input type="checkbox" ${m.done ? 'checked' : ''} onchange="toggleMilestone(${i})" style="margin-right: 10px;">
+                        <span style="flex: 1; ${m.done ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${m.name}</span>
+                        <span class="pill">${m.date}</span>
+                    </summary>
+                    <div class="details-body">
+                        <p style="margin: 0; font-size: 12px;">${m.desc}</p>
+                    </div>
+                </details>
+            `).join('');
+        }
+
+        function toggleMilestone(i) {
+            store.loanMilestones[i].done = !store.loanMilestones[i].done;
+            save();
+            renderLoanMilestones();
+        }
+
+        function addMilestone() {
+            const name = document.getElementById('newMilestoneName').value;
+            const date = document.getElementById('newMilestoneDate').value;
+            const desc = document.getElementById('newMilestoneDesc').value;
+            if (!name || !date) return;
+            store.loanMilestones.push({ name, date, desc, done: false });
+            document.getElementById('newMilestoneName').value = '';
+            document.getElementById('newMilestoneDate').value = '';
+            document.getElementById('newMilestoneDesc').value = '';
+            save();
+            renderLoanMilestones();
+        }
+
+        // Apartment
+        function renderApartmentTasks() {
+            const container = document.getElementById('apartmentTasks');
+            const target = new Date('2026-09-01');
+            const now = new Date();
+            const daysTotal = Math.floor((target - new Date('2026-06-17')) / (1000 * 60 * 60 * 24));
+            const daysLeft = Math.floor((target - now) / (1000 * 60 * 60 * 24));
+            const progress = (daysTotal - daysLeft) / daysTotal * 100;
+            
+            document.getElementById('apartmentProgress').textContent = Math.round(progress) + '%';
+            document.getElementById('apartmentProgressBar').style.width = progress + '%';
+            
+            container.innerHTML = store.apartmentTasks.map((t, i) => `
+                <details style="margin-bottom: 10px;">
+                    <summary>
+                        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleApartmentTask(${i})" style="margin-right: 10px;">
+                        <span style="flex: 1; ${t.done ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${t.name}</span>
+                        <span class="pill">${t.date}</span>
+                    </summary>
+                    <div class="details-body">
+                        <p style="margin: 0; font-size: 12px;">${t.notes}</p>
+                    </div>
+                </details>
+            `).join('');
+        }
+
+        function toggleApartmentTask(i) {
+            store.apartmentTasks[i].done = !store.apartmentTasks[i].done;
+            save();
+            renderApartmentTasks();
+        }
+
+        function addApartmentTask() {
+            const name = document.getElementById('newApartmentTaskName').value;
+            const date = document.getElementById('newApartmentTaskDate').value;
+            const notes = document.getElementById('newApartmentTaskNotes').value;
+            if (!name || !date) return;
+            store.apartmentTasks.push({ name, date, notes, done: false });
+            document.getElementById('newApartmentTaskName').value = '';
+            document.getElementById('newApartmentTaskDate').value = '';
+            document.getElementById('newApartmentTaskNotes').value = '';
+            save();
+            renderApartmentTasks();
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            document.querySelector(`.nav-btn:nth-child(${['home', 'school', 'finances', 'loan', 'apartment'].indexOf(tabName) + 1})`).classList.add('active');
+        }
+
+        // Init
+        renderCalendar();
+        renderTodos();
+        renderSchool();
+        renderFinances();
+        renderLoanMilestones();
+        renderApartmentTasks();
+
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:text/javascript;charset=utf-8,' + encodeURIComponent(`
+                self.addEventListener('install', event => {
+                    event.waitUntil(self.skipWaiting());
+                });
+                self.addEventListener('activate', event => {
+                    event.waitUntil(self.clients.claim());
+                });
+            `)).catch(() => {});
+        }
+    </script>
+</body>
+</html>

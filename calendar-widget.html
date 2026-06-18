@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="week calendar">
+    <meta name="theme-color" content="#6a2b54">
+    <title>week calendar</title>
+    
+    <link rel="manifest" href="data:application/json,{%22name%22:%22week%20calendar%22,%22short_name%22:%22calendar%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23fff%22,%22theme_color%22:%22%236a2b54%22}">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&family=Outfit:wght@300;400;500&display=swap');
+        
+        :root {
+            --ink: #6a2b54;
+            --muted: #b07a98;
+            --paper: #fff;
+            --work: #ff4fa3;
+            --class: #a06cff;
+            --study: #27cdbb;
+            --personal: #f0eff7;
+            --light-pink: #ffe1f0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+        body {
+            color: var(--ink);
+            font-family: 'Jost', sans-serif;
+            background: linear-gradient(180deg, #fff2f8 0%, #ffeaf4 100%);
+            background-attachment: fixed;
+            padding: 0;
+        }
+
+        .wrap {
+            max-width: 100%;
+            padding: 20px 16px 80px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin: 0 0 20px 0;
+            text-transform: lowercase;
+            letter-spacing: -0.5px;
+            background: linear-gradient(90deg, #ff5fb0, #a06cff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .day-card {
+            background: white;
+            border: 2px solid #ffe0ee;
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(255, 95, 176, 0.08);
+        }
+
+        .day-card:active {
+            border-color: var(--work);
+            box-shadow: 0 6px 16px rgba(255, 95, 176, 0.14);
+        }
+
+        .day-card.open {
+            border-color: var(--work);
+            background: rgba(255, 79, 163, 0.02);
+        }
+
+        .day-header {
+            font-weight: 800;
+            font-size: 14px;
+            text-transform: lowercase;
+            margin-bottom: 8px;
+            color: var(--ink);
+        }
+
+        .schedule-block {
+            font-size: 10px;
+            padding: 4px 6px;
+            border-radius: 4px;
+            margin-bottom: 4px;
+            text-transform: lowercase;
+            font-weight: 700;
+            color: white;
+        }
+
+        .block-work {
+            background: var(--work);
+        }
+
+        .block-class {
+            background: var(--class);
+        }
+
+        .block-study {
+            background: var(--study);
+        }
+
+        .block-personal {
+            background: #d6d0e8;
+            color: var(--ink);
+        }
+
+        .checklist {
+            display: none;
+            background: white;
+            border: 2px solid #ffe0ee;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+            box-shadow: 0 6px 16px rgba(255, 95, 176, 0.12);
+        }
+
+        .checklist.open {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .checklist h3 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            text-transform: lowercase;
+            color: var(--ink);
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            background: rgba(255, 79, 163, 0.08);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .todo-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--work);
+        }
+
+        .todo-item label {
+            flex: 1;
+            cursor: pointer;
+            text-transform: lowercase;
+        }
+
+        .todo-item.done label {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .add-todo {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .add-todo input {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #ffe0ee;
+            border-radius: 6px;
+            font-family: 'Jost', sans-serif;
+            font-size: 12px;
+            color: var(--ink);
+        }
+
+        .add-todo input:focus {
+            outline: none;
+            border-color: var(--work);
+            background: rgba(255, 79, 163, 0.05);
+        }
+
+        .add-todo button {
+            border: none;
+            background: linear-gradient(120deg, #ff5fb0, #a06cff);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-family: 'Jost', sans-serif;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            text-transform: lowercase;
+        }
+
+        .del-btn {
+            background: none;
+            border: none;
+            color: #ff4fa3;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #ffe0ee;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            padding-bottom: max(8px, env(safe-area-inset-bottom));
+            z-index: 100;
+        }
+
+        .nav-btn {
+            flex: 1;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: lowercase;
+            cursor: pointer;
+            padding: 8px;
+            font-family: 'Jost', sans-serif;
+        }
+
+        .nav-btn.active {
+            color: var(--work);
+        }
+
+        @media (max-width: 600px) {
+            .week-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <h1>week calendar</h1>
+        <div class="week-grid" id="weekGrid"></div>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="nav-btn active" onclick="switchView('calendar')">calendar</button>
+        <button class="nav-btn" onclick="switchView('dashboard')">dashboard</button>
+    </div>
+
+    <script>
+        const weekDays = [
+            { date: '2026-06-21', name: 'sun', blocks: [{ type: 'work', time: '7pm-close' }] },
+            { date: '2026-06-22', name: 'mon', blocks: [{ type: 'personal', time: '8am-10am' }, { type: 'study', time: '12pm-4pm' }, { type: 'work', time: '8pm-2am' }] },
+            { date: '2026-06-23', name: 'tues', blocks: [{ type: 'personal', time: '8am-10am' }, { type: 'study', time: '10am-5:30pm' }, { type: 'class', time: '5:30pm-8:30pm' }, { type: 'work', time: '9pm-2am' }] },
+            { date: '2026-06-24', name: 'wed', blocks: [{ type: 'personal', time: '8am-10am' }, { type: 'study', time: '12pm-4pm' }] },
+            { date: '2026-06-25', name: 'thurs', blocks: [{ type: 'personal', time: '8am-10am' }, { type: 'study', time: '12pm-4pm' }] },
+            { date: '2026-06-26', name: 'fri', blocks: [{ type: 'personal', time: '8am-10am' }, { type: 'study', time: '12pm-4pm' }] },
+            { date: '2026-06-27', name: 'sat', blocks: [{ type: 'study', time: '12pm-4pm' }, { type: 'work', time: '1pm-8pm' }] }
+        ];
+
+        const store = {
+            checklists: JSON.parse(localStorage.getItem('weekChecklists')) || {}
+        };
+
+        function save() {
+            localStorage.setItem('weekChecklists', JSON.stringify(store.checklists));
+        }
+
+        function renderWeek() {
+            const grid = document.getElementById('weekGrid');
+            grid.innerHTML = weekDays.map((day, i) => {
+                const checklist = store.checklists[day.date] || [];
+                return `
+                    <div class="day-card" onclick="toggleChecklist('${day.date}')">
+                        <div class="day-header">${day.name} ${day.date.split('-')[2]}</div>
+                        ${day.blocks.map(b => `<div class="schedule-block block-${b.type}">${b.time}</div>`).join('')}
+                        <div class="checklist ${document.getElementById('checklist-' + day.date)?.classList.contains('open') ? 'open' : ''}" id="checklist-${day.date}">
+                            <h3>${day.name} checklist</h3>
+                            <div id="todos-${day.date}">
+                                ${checklist.map((item, j) => `
+                                    <div class="todo-item ${item.done ? 'done' : ''}">
+                                        <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleTodo('${day.date}', ${j})">
+                                        <label>${item.text}</label>
+                                        <button class="del-btn" onclick="deleteTodo('${day.date}', ${j})">×</button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="add-todo">
+                                <input type="text" id="input-${day.date}" placeholder="add task">
+                                <button onclick="addTodo('${day.date}')">add</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleChecklist(date) {
+            const checklist = document.getElementById('checklist-' + date);
+            checklist.classList.toggle('open');
+        }
+
+        function addTodo(date) {
+            const input = document.getElementById('input-' + date);
+            const text = input.value.trim();
+            if (!text) return;
+            
+            if (!store.checklists[date]) store.checklists[date] = [];
+            store.checklists[date].push({ text, done: false });
+            input.value = '';
+            save();
+            renderWeek();
+        }
+
+        function toggleTodo(date, i) {
+            store.checklists[date][i].done = !store.checklists[date][i].done;
+            save();
+            renderWeek();
+        }
+
+        function deleteTodo(date, i) {
+            store.checklists[date].splice(i, 1);
+            save();
+            renderWeek();
+        }
+
+        function switchView(view) {
+            if (view === 'dashboard') {
+                window.location.href = './life-dashboard.html';
+            }
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        renderWeek();
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:text/javascript;charset=utf-8,' + encodeURIComponent(`
+                self.addEventListener('install', event => { event.waitUntil(self.skipWaiting()); });
+                self.addEventListener('activate', event => { event.waitUntil(self.clients.claim()); });
+            `)).catch(() => {});
+        }
+    </script>
+</body>
+</html>
