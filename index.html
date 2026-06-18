@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="life dashboard">
+    <meta name="theme-color" content="#0f1419">
+    <title>life dashboard</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0f1419;
+            --shallow: #1b2440;
+            --navy: #131a2e;
+            --plum: #c98bb8;
+            --teal: #27cdbb;
+            --foam: #f0eff7;
+            --muted: #abb3cf;
+            --cl: #ff4fa3;
+            --ct: #a06cff;
+            --re: #27cdbb;
+            --border: rgba(171,179,207,0.13);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            height: 100%;
+            background: var(--bg);
+            color: var(--foam);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            font-family: 'Outfit', system-ui, sans-serif;
+            font-weight: 400;
+            font-size: 14px;
+            line-height: 1.5;
+            padding-bottom: 64px;
+        }
+
+        /* ── header ── */
+        .app-header {
+            background: var(--navy);
+            padding: 16px 18px 10px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .app-title {
+            font-family: 'Jost', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--foam);
+            letter-spacing: -0.2px;
+        }
+
+        .app-date {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 1px;
+        }
+
+        /* ── tab strip ── */
+        .tab-strip {
+            display: flex;
+            overflow-x: auto;
+            background: var(--navy);
+            border-bottom: 1px solid var(--border);
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .tab-strip::-webkit-scrollbar { display: none; }
+
+        .tab-btn {
+            flex: none;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--muted);
+            font-family: 'Jost', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 9px 16px;
+            cursor: pointer;
+            white-space: nowrap;
+            text-transform: lowercase;
+            transition: color 0.15s, border-color 0.15s;
+        }
+        .tab-btn.active {
+            color: var(--foam);
+            border-bottom-color: var(--plum);
+        }
+
+        /* ── panels ── */
+        .panel { display: none; padding: 16px 16px 28px; }
+        .panel.active { display: block; }
+
+        /* ── bottom nav ── */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: var(--navy);
+            border-top: 1px solid var(--border);
+            display: flex;
+            padding-bottom: env(safe-area-inset-bottom, 0);
+            z-index: 100;
+        }
+
+        .nav-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-family: 'Jost', sans-serif;
+            font-size: 9px;
+            font-weight: 500;
+            padding: 8px 2px 6px;
+            cursor: pointer;
+            text-transform: lowercase;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            transition: color 0.15s;
+        }
+        .nav-btn .icon { font-size: 15px; }
+        .nav-btn.active { color: var(--plum); }
+
+        /* ── cards ── */
+        .card {
+            background: var(--shallow);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-family: 'Jost', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--plum);
+            text-transform: lowercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sec-label {
+            font-family: 'Jost', sans-serif;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 18px 0 8px;
+        }
+        .sec-label:first-child { margin-top: 4px; }
+
+        /* ── rows ── */
+        .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+            gap: 8px;
+        }
+        .row:last-child { border-bottom: none; }
+        .row-label { color: var(--muted); flex: 1; }
+        .row-value { color: var(--foam); font-weight: 500; text-align: right; }
+
+        /* ── progress bar ── */
+        .prog-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+        .prog-bar {
+            height: 5px;
+            background: rgba(171,179,207,0.12);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .prog-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, var(--plum), var(--teal));
+            transition: width 0.4s ease;
+        }
+
+        /* ── inputs ── */
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        textarea,
+        select {
+            width: 100%;
+            background: var(--navy);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--foam);
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            padding: 8px 10px;
+            margin-bottom: 8px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        input:focus, textarea:focus, select:focus { border-color: var(--plum); }
+        textarea { resize: vertical; min-height: 64px; }
+        input[type="number"] { -moz-appearance: textfield; }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+        /* ── buttons ── */
+        .btn {
+            background: var(--plum);
+            color: var(--navy);
+            border: none;
+            border-radius: 8px;
+            font-family: 'Jost', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 7px 14px;
+            cursor: pointer;
+            text-transform: lowercase;
+            white-space: nowrap;
+        }
+        .btn-ghost {
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Jost', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 6px 12px;
+            cursor: pointer;
+            text-transform: lowercase;
+            white-space: nowrap;
+        }
+        .btn-sm { padding: 4px 10px; font-size: 11px; }
+        .btn-teal { background: var(--teal); }
+        .btn-danger { background: transparent; color: var(--cl); border: 1px solid rgba(255,79,163,0.3); }
+
+        /* ── checkbox items ── */
+        .check-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 9px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+        .check-item:last-child { border-bottom: none; }
+        .check-item input[type="checkbox"] {
+            margin-top: 2px;
+            accent-color: var(--plum);
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .check-item.done .item-label {
+            text-decoration: line-through;
+            opacity: 0.45;
+        }
+        .item-label { flex: 1; }
+        .item-meta { font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+        /* ── info box ── */
+        .info-box {
+            background: rgba(201,139,184,0.1);
+            border: 1px solid rgba(201,139,184,0.25);
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 14px;
+            line-height: 1.6;
+        }
+        .info-box strong { color: var(--foam); font-weight: 500; }
+
+        .warn-box {
+            background: rgba(255,79,163,0.1);
+            border: 1px solid rgba(255,79,163,0.25);
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 14px;
+        }
+        .warn-box strong { color: var(--cl); }
+
+        /* ── HOME ── */
+        .glance-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .glance-item {
+            background: var(--shallow);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+        .glance-item.wide { grid-column: 1 / -1; }
+
+        .glance-num {
+            font-family: 'Jost', sans-serif;
+            font-size: 30px;
+            font-weight: 600;
+            color: var(--plum);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+        .glance-num.small { font-size: 17px; margin-top: 4px; }
+        .glance-sub { font-size: 11px; color: var(--muted); }
+
+        .sched-item {
+            display: flex;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            align-items: flex-start;
+        }
+        .sched-item:last-child { border-bottom: none; }
+        .sched-time { font-size: 11px; color: var(--muted); white-space: nowrap; min-width: 72px; margin-top: 2px; }
+        .sched-lbl { font-size: 13px; line-height: 1.3; }
+
+        .tag {
+            display: inline-block;
+            font-size: 9px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 5px;
+            margin-top: 3px;
+        }
+        .tag-school { background: rgba(160,108,255,0.2); color: var(--ct); }
+        .tag-gym    { background: rgba(39,205,187,0.2);  color: var(--teal); }
+        .tag-work   { background: rgba(255,79,163,0.2);  color: var(--cl); }
+        .tag-personal { background: rgba(171,179,207,0.15); color: var(--muted); }
+
+        .journal-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: lowercase;
+            margin-bottom: 4px;
+        }
+        .journal-field { margin-bottom: 10px; }
+        .journal-field:last-child { margin-bottom: 0; }
+
+        /* ── SCHOOL ── */
+        .status-btn {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            white-space: nowrap;
+            text-transform: lowercase;
+            flex-shrink: 0;
+        }
+        .s-pending    { background: rgba(171,179,207,0.13); color: var(--muted); }
+        .s-inprogress { background: rgba(201,139,184,0.2);  color: var(--plum); }
+        .s-done       { background: rgba(39,205,187,0.18);  color: var(--teal); }
+
+        .assign-item {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .assign-item:last-child { border-bottom: none; }
+
+        .assign-top {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        .course-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 5px;
+        }
+        .assign-name { flex: 1; font-size: 13px; line-height: 1.35; }
+        .assign-name.done { text-decoration: line-through; opacity: 0.45; }
+        .assign-meta { font-size: 11px; color: var(--muted); display: flex; gap: 10px; padding-left: 15px; }
+
+        .hours-big {
+            font-family: 'Jost', sans-serif;
+            font-size: 26px;
+            font-weight: 600;
+            color: var(--teal);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        /* ── FINANCES ── */
+        .income-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .income-row:last-child { border-bottom: none; }
+        .income-wk { font-size: 12px; color: var(--muted); min-width: 56px; }
+        .income-row input[type="number"] {
+            width: 88px;
+            margin: 0;
+            padding: 5px 8px;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+        .income-total-big {
+            font-family: 'Jost', sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--teal);
+        }
+
+        .tier-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        /* ── LOAN ── */
+        .action-item {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            padding: 9px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .action-item:last-child { border-bottom: none; }
+        .action-date {
+            font-size: 10px;
+            color: var(--plum);
+            white-space: nowrap;
+            min-width: 52px;
+            margin-top: 3px;
+            font-weight: 600;
+        }
+        .action-text { font-size: 13px; flex: 1; line-height: 1.4; }
+
+        /* ── APARTMENT ── */
+        .countdown-block {
+            text-align: center;
+            padding: 22px 0 10px;
+        }
+        .countdown-n {
+            font-family: 'Jost', sans-serif;
+            font-size: 68px;
+            font-weight: 600;
+            color: var(--plum);
+            line-height: 1;
+        }
+        .countdown-lbl { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+        /* ── ROUTINE ── */
+        .routine-day {
+            margin-bottom: 10px;
+        }
+        .routine-day-hdr {
+            font-family: 'Jost', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--foam);
+            text-transform: lowercase;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .today-badge {
+            font-size: 9px;
+            background: var(--plum);
+            color: var(--navy);
+            padding: 2px 6px;
+            border-radius: 5px;
+            font-weight: 600;
+        }
+        .gym-grid { display: flex; gap: 6px; flex-wrap: wrap; }
+        .gym-day {
+            background: var(--navy);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 11px;
+            color: var(--muted);
+            cursor: pointer;
+            min-width: 44px;
+            text-align: center;
+            transition: all 0.15s;
+        }
+        .gym-day.hit  { background: rgba(39,205,187,0.15); border-color: var(--teal); color: var(--teal); }
+        .gym-day.skip { background: rgba(255,79,163,0.1);  border-color: var(--cl);   color: var(--cl); }
+
+        /* ── divider ── */
+        .sep { height: 1px; background: var(--border); margin: 14px 0; }
+
+        /* ── misc ── */
+        .flex-row { display: flex; gap: 8px; align-items: center; }
+        .flex-row.wrap { flex-wrap: wrap; }
+        .muted { color: var(--muted); }
+        .cl-color { color: var(--cl); }
+        .teal-color { color: var(--teal); }
+    </style>
+</head>
+<body>
+
+<div class="app-header">
+    <div class="app-title">life dashboard</div>
+    <div class="app-date" id="headerDate"></div>
+</div>
+
+<div class="tab-strip" id="tabStrip">
+    <button class="tab-btn active" onclick="switchTab('home')">home</button>
+    <button class="tab-btn" onclick="switchTab('school')">school</button>
+    <button class="tab-btn" onclick="switchTab('finances')">finances</button>
+    <button class="tab-btn" onclick="switchTab('loan')">loan rehab</button>
+    <button class="tab-btn" onclick="switchTab('apartment')">apartment</button>
+    <button class="tab-btn" onclick="switchTab('routine')">routine</button>
+</div>
+
+<!-- ════ HOME ════ -->
+<div id="tab-home" class="panel active">
+
+    <div class="sec-label">today</div>
+    <div class="card" id="todayCard"></div>
+
+    <div class="sec-label">quick glance</div>
+    <div class="glance-grid" id="glanceGrid"></div>
+
+    <div class="sec-label">night-before journal</div>
+    <div class="card">
+        <div class="journal-field">
+            <div class="journal-label">up by</div>
+            <input type="text" id="j-upby" placeholder="e.g. 7:30am" oninput="saveJournal()">
+        </div>
+        <div class="journal-field">
+            <div class="journal-label">1–2 things that matter today</div>
+            <textarea id="j-matters" placeholder="keep it short" oninput="saveJournal()"></textarea>
+        </div>
+        <div class="journal-field">
+            <div class="journal-label">gym</div>
+            <select id="j-gym" onchange="saveJournal()">
+                <option value="">—</option>
+                <option value="yes">yes</option>
+                <option value="no">no</option>
+            </select>
+        </div>
+        <div class="journal-field">
+            <div class="journal-label">tonight</div>
+            <select id="j-night" onchange="saveJournal()">
+                <option value="">—</option>
+                <option value="home">home night</option>
+                <option value="planned">planned out</option>
+                <option value="work">work</option>
+            </select>
+        </div>
+    </div>
+
+</div>
+
+<!-- ════ SCHOOL ════ -->
+<div id="tab-school" class="panel">
+
+    <div class="info-box">school block: <strong>noon – 4pm daily.</strong> CT is self-paced — no late penalty, work ahead freely.</div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <div>
+            <div style="font-size: 11px; color: var(--muted);">hours remaining</div>
+            <div class="hours-big" id="hoursLeft">—</div>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 11px; color: var(--muted);">assignments done</div>
+            <div class="hours-big" id="assignsDone" style="color: var(--plum);">—</div>
+        </div>
+    </div>
+
+    <div class="filter-row" id="filterRow">
+        <button class="btn-ghost btn-sm" id="f-all" onclick="setFilter('all')">all</button>
+        <button class="btn-ghost btn-sm" id="f-pending" onclick="setFilter('pending')">pending</button>
+        <button class="btn-ghost btn-sm" id="f-inprogress" onclick="setFilter('inprogress')">in progress</button>
+        <button class="btn-ghost btn-sm" id="f-done" onclick="setFilter('done')">done</button>
+    </div>
+
+    <div id="assignList"></div>
+
+</div>
+
+<!-- ════ FINANCES ════ -->
+<div id="tab-finances" class="panel">
+
+    <div class="sec-label">income projection</div>
+    <div class="card">
+        <div class="card-title">weekly income — edit as you go</div>
+        <div id="incomeRows"></div>
+        <div class="sep"></div>
+        <div class="flex-row" style="justify-content: space-between;">
+            <span class="muted" style="font-size: 12px;">summer total</span>
+            <span class="income-total-big" id="incomeTotal">$0</span>
+        </div>
+    </div>
+
+    <div class="sec-label">save tiers (by aug 1)</div>
+    <div class="card">
+        <div class="tier-row" id="tierBtns"></div>
+        <div class="row"><span class="row-label">aggressive</span><span class="row-value">$3,800</span></div>
+        <div class="row"><span class="row-label">mid</span><span class="row-value">$3,200</span></div>
+        <div class="row"><span class="row-label">min</span><span class="row-value">$2,700</span></div>
+        <div class="sep"></div>
+        <div class="row">
+            <span class="row-label">your target</span>
+            <span class="row-value teal-color" id="tierTarget">—</span>
+        </div>
+    </div>
+
+    <div class="sec-label">monthly envelopes</div>
+    <div class="card">
+        <div class="row"><span class="row-label">groceries</span><span class="row-value">$300</span></div>
+        <div class="row"><span class="row-label">eating out</span><span class="row-value">$80</span></div>
+        <div class="row"><span class="row-label">going out</span><span class="row-value">$150</span></div>
+        <div class="row"><span class="row-label">shopping</span><span class="row-value">$100</span></div>
+        <div class="row"><span class="row-label">beauty</span><span class="row-value">$50</span></div>
+        <div class="sep"></div>
+        <div class="row"><span class="row-label">discretionary total</span><span class="row-value">$680</span></div>
+        <div class="row"><span class="row-label">retirement (self acct, auto)</span><span class="row-value">$25/mo</span></div>
+    </div>
+
+    <div class="sec-label">monthly bills</div>
+    <div class="card">
+        <div class="row"><span class="row-label">Claude</span><span class="row-value">$100 · 1st</span></div>
+        <div class="row"><span class="row-label">Peacock</span><span class="row-value">$10 · 6th</span></div>
+        <div class="row"><span class="row-label">iCloud</span><span class="row-value">$9.99 · 8th</span></div>
+        <div class="row">
+            <span class="row-label">Perpay deduction</span>
+            <span class="row-value muted" style="font-size: 11px;">confirm amount</span>
+        </div>
+        <div class="row">
+            <span class="row-label">health insurance</span>
+            <span class="row-value muted" style="font-size: 11px;">reinstate or re-enroll</span>
+        </div>
+    </div>
+
+    <div class="sec-label">past due</div>
+    <div class="card">
+        <div class="card-title">
+            check off as you pay
+            <button class="btn btn-sm" onclick="addPastDue()">+ add</button>
+        </div>
+        <div id="pastDueList"></div>
+    </div>
+
+    <div class="sec-label">account balances</div>
+    <div class="card">
+        <div class="card-title">
+            current
+            <button class="btn-ghost btn-sm" onclick="editBalances()">update</button>
+        </div>
+        <div id="balancesDisplay"></div>
+    </div>
+
+    <div class="sec-label">reset</div>
+    <button class="btn-ghost" style="width: 100%;" onclick="resetTab('finances')">clear finances data</button>
+
+</div>
+
+<!-- ════ LOAN REHAB ════ -->
+<div id="tab-loan" class="panel">
+
+    <div class="warn-box">
+        <strong>nelnet:</strong> in-school deferment pending. $244/mo paused. do not pay until you have written deferment confirmation.
+    </div>
+
+    <div class="sec-label">numbers</div>
+    <div class="card">
+        <div class="row"><span class="row-label">past due</span><span class="row-value cl-color">$591.79</span></div>
+        <div class="row"><span class="row-label">next payment</span><span class="row-value">$837.42</span></div>
+        <div class="row"><span class="row-label">next payment due</span><span class="row-value">July 8, 2026</span></div>
+        <div class="row"><span class="row-label">monthly (if reinstated)</span><span class="row-value">$244</span></div>
+        <div class="sep"></div>
+        <div class="row"><span class="row-label">CLC balance</span><span class="row-value cl-color">$8,319</span></div>
+        <div class="row"><span class="row-label" style="font-size: 11px;">contact CLC financial aid to clarify urgency</span><span class="row-value muted" style="font-size: 11px;">gpem@luc.edu for Loyola</span></div>
+    </div>
+
+    <div class="sec-label">action items</div>
+    <div class="card">
+        <div id="loanActions"></div>
+        <div class="sep"></div>
+        <div class="flex-row">
+            <input type="text" id="newActionText" placeholder="add action" style="margin: 0; flex: 1;">
+            <button class="btn" onclick="addLoanAction()">add</button>
+        </div>
+    </div>
+
+    <div class="sec-label">notes</div>
+    <div class="card">
+        <textarea id="loanNotes" placeholder="call notes, reference numbers, etc." oninput="saveLoanNotes()" style="margin: 0; min-height: 100px;"></textarea>
+    </div>
+
+    <div class="sec-label">reset</div>
+    <button class="btn-ghost" style="width: 100%;" onclick="resetTab('loan')">clear loan data</button>
+
+</div>
+
+<!-- ════ APARTMENT ════ -->
+<div id="tab-apartment" class="panel">
+
+    <div id="apartCountdown" class="countdown-block"></div>
+
+    <div class="sec-label">move-in costs</div>
+    <div class="card">
+        <div class="row"><span class="row-label">total move-in stack</span><span class="row-value">$5,400</span></div>
+        <div class="row"><span class="row-label">your half</span><span class="row-value teal-color">$2,700</span></div>
+        <div class="row"><span class="row-label">rent / mo</span><span class="row-value">$1,600</span></div>
+        <div class="row"><span class="row-label">your share / mo (kyle split)</span><span class="row-value teal-color">~$1,293</span></div>
+        <div class="row"><span class="row-label">pet fee (one-time)</span><span class="row-value">$200</span></div>
+        <div class="row"><span class="row-label">utilities</span><span class="row-value muted" style="font-size: 11px;">electric + internet only</span></div>
+        <div class="row">
+            <span class="row-label" style="font-size: 11px;">deposit may reduce for referral</span>
+            <span class="row-value muted" style="font-size: 11px;">confirm with friend</span>
+        </div>
+    </div>
+
+    <div class="sec-label">house items checklist</div>
+    <div class="card">
+        <div class="card-title">
+            still need
+            <div class="flex-row">
+                <span style="font-size: 12px; color: var(--muted);">remaining: </span>
+                <span class="income-total-big" id="itemsTotal" style="font-size: 18px;">$0</span>
+            </div>
+        </div>
+        <div id="houseItems"></div>
+        <div class="sep"></div>
+        <div class="flex-row wrap">
+            <input type="text" id="newItemName" placeholder="item" style="margin: 0; flex: 1; min-width: 120px;">
+            <input type="number" id="newItemCost" placeholder="$" style="margin: 0; width: 68px;">
+            <button class="btn" onclick="addHouseItem()">add</button>
+        </div>
+    </div>
+
+    <div class="sec-label">notes</div>
+    <div class="card">
+        <textarea id="apartNotes" placeholder="things to confirm, unit details, etc." oninput="saveApartNotes()" style="margin: 0; min-height: 80px;"></textarea>
+    </div>
+
+    <div class="sec-label">reset</div>
+    <button class="btn-ghost" style="width: 100%;" onclick="resetTab('apartment')">clear apartment data</button>
+
+</div>
+
+<!-- ════ ROUTINE ════ -->
+<div id="tab-routine" class="panel">
+
+    <div class="info-box">
+        three anchors every day: <strong>up by a set time</strong> · <strong>school noon–4</strong> · <strong>night-before journal before bed.</strong>
+        <br><br>
+        wednesday is sacred — no plans, no asks. saturday is the planned social day.
+    </div>
+
+    <div class="sec-label">week structure</div>
+    <div id="weekRoutine"></div>
+
+    <div class="sec-label">gym tracker — this week</div>
+    <div class="card">
+        <div style="font-size: 12px; color: var(--muted); margin-bottom: 10px;">starting base: thu + fri. tap to toggle hit / skip / neutral.</div>
+        <div class="gym-grid" id="gymGrid"></div>
+        <div style="margin-top: 10px; font-size: 12px; color: var(--muted);">sessions this week: <span id="gymCount" class="teal-color" style="font-weight: 600;">0</span></div>
+    </div>
+
+    <div class="sec-label">reset</div>
+    <button class="btn-ghost" style="width: 100%;" onclick="resetTab('routine')">clear gym data</button>
+
+</div>
+
+<!-- ════ BOTTOM NAV ════ -->
+<div class="bottom-nav" id="bottomNav">
+    <button class="nav-btn active" onclick="switchTab('home')"><span class="icon">🏠</span>home</button>
+    <button class="nav-btn" onclick="switchTab('school')"><span class="icon">📚</span>school</button>
+    <button class="nav-btn" onclick="switchTab('finances')"><span class="icon">💰</span>money</button>
+    <button class="nav-btn" onclick="switchTab('loan')"><span class="icon">🎯</span>loan</button>
+    <button class="nav-btn" onclick="switchTab('apartment')"><span class="icon">🏡</span>apt</button>
+    <button class="nav-btn" onclick="switchTab('routine')"><span class="icon">📅</span>routine</button>
+</div>
+
+<script>
+// ── Storage helper ─────────────────────────────────────────────────────────
+const S = {
+    get(k, d) {
+        try { const v = localStorage.getItem(k); return v !== null ? JSON.parse(v) : d; }
+        catch { return d; }
+    },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+    del(k) { localStorage.removeItem(k); }
+};
+
+// ── Tab switching ──────────────────────────────────────────────────────────
+const TAB_IDS = ['home','school','finances','loan','apartment','routine'];
+
+function switchTab(name) {
+    TAB_IDS.forEach(t => {
+        document.getElementById('tab-' + t).classList.toggle('active', t === name);
+    });
+    document.querySelectorAll('.tab-btn').forEach((el, i) =>
+        el.classList.toggle('active', TAB_IDS[i] === name));
+    document.querySelectorAll('.nav-btn').forEach((el, i) =>
+        el.classList.toggle('active', TAB_IDS[i] === name));
+}
+
+// ── Date helpers ───────────────────────────────────────────────────────────
+function todayKey() {
+    return new Date().toISOString().split('T')[0];
+}
+function daysUntil(isoDate) {
+    const diff = new Date(isoDate + 'T12:00:00') - new Date();
+    return Math.ceil(diff / 86400000);
+}
+function weekStartKey() {
+    const d = new Date();
+    d.setDate(d.getDate() - d.getDay());
+    return d.toISOString().split('T')[0];
+}
+function fmtDate(isoDate) {
+    return new Date(isoDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// HOME
+// ══════════════════════════════════════════════════════════════════════════
+const dailySched = {
+    0: [{ time: 'noon – 4pm', lbl: 'school block', tag: 'school' }, { time: 'evening', lbl: 'work shift', tag: 'work' }],
+    1: [{ time: 'noon – 4pm', lbl: 'school block', tag: 'school' }, { time: '8pm – close', lbl: 'work', tag: 'work' }],
+    2: [{ time: 'noon – 4pm', lbl: 'school block', tag: 'school' }, { time: '5:30 – 8:30pm', lbl: 'class', tag: 'school' }],
+    3: [{ time: 'noon – 4pm', lbl: 'school block', tag: 'school' }, { time: 'evening', lbl: 'sacred — no plans', tag: 'personal' }],
+    4: [{ time: 'noon – 4pm', lbl: 'school block', tag: 'school' }, { time: 'afternoon', lbl: 'gym', tag: 'gym' }],
+    5: [{ time: 'noon – 4pm', lbl: 'school block', tag: 'school' }, { time: 'afternoon', lbl: 'gym', tag: 'gym' }],
+    6: [{ time: 'noon – 4pm', lbl: 'school block', tag: 'school' }, { time: 'evening', lbl: 'planned social', tag: 'personal' }],
+};
+
+function renderHome() {
+    const now = new Date();
+    document.getElementById('headerDate').textContent =
+        now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+    // today's schedule
+    const sched = dailySched[now.getDay()] || [];
+    document.getElementById('todayCard').innerHTML =
+        `<div class="card-title">${now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase()}</div>` +
+        sched.map(s => `
+            <div class="sched-item">
+                <div class="sched-time">${s.time}</div>
+                <div>
+                    <div class="sched-lbl">${s.lbl}</div>
+                    <span class="tag tag-${s.tag}">${s.tag}</span>
+                </div>
+            </div>
+        `).join('');
+
+    // quick glance
+    const daysLeft = Math.max(0, daysUntil('2026-08-01'));
+    const assigns = S.get('assignments', defaultAssignments);
+    const pending = assigns.filter(a => a.status !== 'done' && a.due >= todayKey())
+        .sort((a, b) => a.due.localeCompare(b.due));
+    const next = pending.length ? fmtDate(pending[0].due) : 'none';
+    const tier = S.get('saveTier', 'aggressive');
+    const tierAmts = { aggressive: '$3,800', mid: '$3,200', min: '$2,700' };
+
+    document.getElementById('glanceGrid').innerHTML = `
+        <div class="glance-item">
+            <div class="glance-num">${daysLeft}</div>
+            <div class="glance-sub">days to aug 1</div>
+        </div>
+        <div class="glance-item">
+            <div class="glance-num small">${next}</div>
+            <div class="glance-sub">next deadline</div>
+        </div>
+        <div class="glance-item wide">
+            <div class="glance-num" style="font-size:20px; margin-top:4px;">${tierAmts[tier]}</div>
+            <div class="glance-sub">save target (${tier})</div>
+        </div>
+    `;
+}
+
+function loadJournal() {
+    const j = S.get('journal-' + todayKey(), {});
+    document.getElementById('j-upby').value    = j.upBy    || '';
+    document.getElementById('j-matters').value = j.matters || '';
+    document.getElementById('j-gym').value     = j.gym     || '';
+    document.getElementById('j-night').value   = j.night   || '';
+}
+
+function saveJournal() {
+    S.set('journal-' + todayKey(), {
+        upBy:    document.getElementById('j-upby').value,
+        matters: document.getElementById('j-matters').value,
+        gym:     document.getElementById('j-gym').value,
+        night:   document.getElementById('j-night').value,
+    });
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// SCHOOL
+// ══════════════════════════════════════════════════════════════════════════
+const courseColor = { cl: '#ff4fa3', ct: '#a06cff', re: '#27cdbb' };
+const courseName  = { cl: 'contract law', ct: 'critical thinking ✦ self-paced', re: 'real estate' };
+
+const defaultAssignments = [
+    // Contract Law
+    { id:'cl-1',  course:'cl', name:'Discussion: offer & acceptance',       due:'2026-06-23', hours:1,   status:'pending' },
+    { id:'cl-2',  course:'cl', name:'Ch. 1–2 reading quiz',                 due:'2026-06-24', hours:0.5, status:'pending' },
+    { id:'cl-3',  course:'cl', name:'Discussion: consideration doctrine',    due:'2026-06-30', hours:1,   status:'pending' },
+    { id:'cl-4',  course:'cl', name:'Ch. 3–4 reading quiz',                 due:'2026-07-01', hours:0.5, status:'pending' },
+    { id:'cl-5',  course:'cl', name:'Contract analysis essay #1',           due:'2026-07-02', hours:4,   status:'pending' },
+    { id:'cl-6',  course:'cl', name:'Discussion: capacity & legality',       due:'2026-07-07', hours:1,   status:'pending' },
+    { id:'cl-7',  course:'cl', name:'Midterm review quiz',                   due:'2026-07-08', hours:1,   status:'pending' },
+    { id:'cl-8',  course:'cl', name:'Midterm exam',                          due:'2026-07-14', hours:3,   status:'pending' },
+    { id:'cl-9',  course:'cl', name:'Discussion: breach of contract',        due:'2026-07-21', hours:1,   status:'pending' },
+    { id:'cl-10', course:'cl', name:'Ch. 7–8 reading quiz',                  due:'2026-07-22', hours:0.5, status:'pending' },
+    { id:'cl-11', course:'cl', name:'Discussion: remedies',                  due:'2026-07-28', hours:1,   status:'pending' },
+    { id:'cl-12', course:'cl', name:'Contract analysis essay #2',            due:'2026-07-30', hours:4,   status:'pending' },
+    { id:'cl-13', course:'cl', name:'Discussion: UCC & sales contracts',      due:'2026-08-04', hours:1,   status:'pending' },
+    { id:'cl-14', course:'cl', name:'Final exam',                             due:'2026-08-12', hours:3,   status:'pending' },
+    // Critical Thinking (self-paced)
+    { id:'ct-1',  course:'ct', name:'Intro discussion: what is critical thinking?', due:'2026-06-23', hours:0.5, status:'pending' },
+    { id:'ct-2',  course:'ct', name:'Module 1 quiz',                          due:'2026-06-25', hours:0.5, status:'pending' },
+    { id:'ct-3',  course:'ct', name:'Discussion: identifying arguments',      due:'2026-06-30', hours:0.5, status:'pending' },
+    { id:'ct-4',  course:'ct', name:'Argument mapping exercise',              due:'2026-07-01', hours:1.5, status:'pending' },
+    { id:'ct-5',  course:'ct', name:'Discussion: logical fallacies',          due:'2026-07-07', hours:0.5, status:'pending' },
+    { id:'ct-6',  course:'ct', name:'Fallacy identification worksheet',       due:'2026-07-08', hours:1.5, status:'pending' },
+    { id:'ct-7',  course:'ct', name:'Midterm: argument analysis paper',       due:'2026-07-15', hours:4,   status:'pending' },
+    { id:'ct-8',  course:'ct', name:'Discussion: bias & cognitive errors',    due:'2026-07-21', hours:0.5, status:'pending' },
+    { id:'ct-9',  course:'ct', name:'Module 5 quiz',                          due:'2026-07-22', hours:0.5, status:'pending' },
+    { id:'ct-10', course:'ct', name:'Discussion: evaluating sources',         due:'2026-07-28', hours:0.5, status:'pending' },
+    { id:'ct-11', course:'ct', name:'Source evaluation assignment',           due:'2026-07-29', hours:2,   status:'pending' },
+    { id:'ct-12', course:'ct', name:'Final: critical analysis essay',         due:'2026-08-12', hours:4,   status:'pending' },
+    // Real Estate
+    { id:'re-1',  course:'re', name:'Discussion: intro to real estate',       due:'2026-06-23', hours:0.5, status:'pending' },
+    { id:'re-2',  course:'re', name:'Ch. 1 quiz',                             due:'2026-06-24', hours:0.5, status:'pending' },
+    { id:'re-3',  course:'re', name:'Discussion: property rights & ownership',due:'2026-06-30', hours:0.5, status:'pending' },
+    { id:'re-4',  course:'re', name:'Ch. 2–3 quiz',                          due:'2026-07-01', hours:0.5, status:'pending' },
+    { id:'re-5',  course:'re', name:'Discussion: financing basics',           due:'2026-07-07', hours:0.5, status:'pending' },
+    { id:'re-6',  course:'re', name:'Mortgage math worksheet',                due:'2026-07-08', hours:2,   status:'pending' },
+    { id:'re-7',  course:'re', name:'Midterm exam',                           due:'2026-07-14', hours:3,   status:'pending' },
+    { id:'re-8',  course:'re', name:'Discussion: agency relationships',       due:'2026-07-21', hours:0.5, status:'pending' },
+    { id:'re-9',  course:'re', name:'Ch. 7 quiz',                             due:'2026-07-22', hours:0.5, status:'pending' },
+    { id:'re-10', course:'re', name:'Discussion: contracts in real estate',   due:'2026-07-28', hours:0.5, status:'pending' },
+    { id:'re-11', course:'re', name:'Listing agreement analysis',             due:'2026-07-30', hours:2,   status:'pending' },
+    { id:'re-12', course:'re', name:'Discussion: fair housing laws',          due:'2026-08-04', hours:0.5, status:'pending' },
+    { id:'re-13', course:'re', name:'Final exam',                             due:'2026-08-12', hours:3,   status:'pending' },
+];
+
+let activeFilter = 'all';
+
+function getAssigns() { return S.get('assignments', defaultAssignments); }
+
+function bumpStatus(id) {
+    const arr = getAssigns();
+    const a = arr.find(x => x.id === id);
+    if (!a) return;
+    a.status = a.status === 'pending' ? 'inprogress' : a.status === 'inprogress' ? 'done' : 'pending';
+    S.set('assignments', arr);
+    renderSchool();
+    renderHome(); // update quick glance
+}
+
+function setFilter(f) {
+    activeFilter = f;
+    ['all','pending','inprogress','done'].forEach(x => {
+        const el = document.getElementById('f-' + x);
+        el.className = x === f ? 'btn btn-sm' : 'btn-ghost btn-sm';
+    });
+    renderSchool();
+}
+
+function renderSchool() {
+    const arr = getAssigns();
+    const done = arr.filter(a => a.status === 'done').length;
+    const rem  = arr.filter(a => a.status !== 'done').reduce((s, a) => s + a.hours, 0);
+    document.getElementById('hoursLeft').textContent  = rem.toFixed(1) + 'h';
+    document.getElementById('assignsDone').textContent = done + '/' + arr.length;
+
+    const filtered = activeFilter === 'all' ? arr : arr.filter(a => a.status === activeFilter);
+    const sorted   = [...filtered].sort((a, b) => a.due.localeCompare(b.due));
+
+    if (sorted.length === 0) {
+        document.getElementById('assignList').innerHTML =
+            '<div class="card muted" style="text-align:center; padding: 20px;">nothing in this filter</div>';
+        return;
+    }
+
+    // Group by course
+    const groups = {};
+    sorted.forEach(a => { (groups[a.course] = groups[a.course] || []).push(a); });
+
+    document.getElementById('assignList').innerHTML = Object.entries(groups).map(([c, items]) => `
+        <div class="card" style="border-left: 3px solid ${courseColor[c]}; margin-bottom: 12px;">
+            <div class="card-title" style="color: ${courseColor[c]};">${courseName[c]}</div>
+            ${items.map(a => `
+                <div class="assign-item">
+                    <div class="assign-top">
+                        <div class="course-dot" style="background: ${courseColor[a.course]};"></div>
+                        <div class="assign-name ${a.status === 'done' ? 'done' : ''}">${a.name}</div>
+                        <button class="status-btn s-${a.status}" onclick="bumpStatus('${a.id}')">
+                            ${a.status === 'inprogress' ? 'in progress' : a.status}
+                        </button>
+                    </div>
+                    <div class="assign-meta">
+                        <span>due ${fmtDate(a.due)}</span>
+                        <span>${a.hours}h est</span>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// FINANCES
+// ══════════════════════════════════════════════════════════════════════════
+const defaultWeeks = [
+    { wk: 'jun 22', amount: 0 },
+    { wk: 'jun 29', amount: 0 },
+    { wk: 'jul 6',  amount: 0 },
+    { wk: 'jul 13', amount: 0 },
+    { wk: 'jul 20', amount: 0 },
+    { wk: 'jul 27', amount: 0 },
+    { wk: 'aug 3',  amount: 0 },
+];
+
+function renderFinances() {
+    const weeks = S.get('weeklyIncome', defaultWeeks);
+    document.getElementById('incomeRows').innerHTML = weeks.map((w, i) => `
+        <div class="income-row">
+            <span class="income-wk">${w.wk}</span>
+            <input type="number" value="${w.amount || 0}" min="0"
+                onchange="updateWeekIncome(${i}, this.value)" placeholder="0">
+            <span class="muted" style="font-size:11px;">/wk</span>
+        </div>
+    `).join('');
+
+    updateIncomeTotal(weeks);
+    renderTierButtons();
+    renderPastDue();
+    renderBalances();
+}
+
+function updateWeekIncome(i, val) {
+    const weeks = S.get('weeklyIncome', defaultWeeks);
+    weeks[i].amount = parseFloat(val) || 0;
+    S.set('weeklyIncome', weeks);
+    updateIncomeTotal(weeks);
+}
+
+function updateIncomeTotal(weeks) {
+    const total = weeks.reduce((s, w) => s + (parseFloat(w.amount) || 0), 0);
+    document.getElementById('incomeTotal').textContent = '$' + total.toLocaleString();
+}
+
+function renderTierButtons() {
+    const tier = S.get('saveTier', 'aggressive');
+    const tierAmts = { aggressive: '$3,800', mid: '$3,200', min: '$2,700' };
+    document.getElementById('tierBtns').innerHTML =
+        ['aggressive','mid','min'].map(t =>
+            `<button class="${t === tier ? 'btn btn-sm' : 'btn-ghost btn-sm'}" onclick="setSaveTier('${t}')">${t}</button>`
+        ).join('');
+    document.getElementById('tierTarget').textContent = tierAmts[tier];
+}
+
+function setSaveTier(tier) {
+    S.set('saveTier', tier);
+    renderTierButtons();
+    renderHome();
+}
+
+function renderPastDue() {
+    const items = S.get('pastDue', []);
+    const el = document.getElementById('pastDueList');
+    if (!items.length) {
+        el.innerHTML = '<div class="muted" style="font-size:13px; padding: 4px 0;">none yet</div>';
+        return;
+    }
+    const total = items.filter(x => !x.paid).reduce((s, x) => s + x.amount, 0);
+    el.innerHTML = items.map((item, i) => `
+        <div class="check-item ${item.paid ? 'done' : ''}">
+            <input type="checkbox" ${item.paid ? 'checked' : ''} onchange="togglePastDue(${i})">
+            <div class="item-label">${item.name}</div>
+            <div class="item-meta">$${item.amount.toFixed(2)}</div>
+        </div>
+    `).join('') + `<div class="row" style="margin-top: 8px;">
+        <span class="row-label">remaining</span>
+        <span class="row-value cl-color">$${total.toFixed(2)}</span>
+    </div>`;
+}
+
+function addPastDue() {
+    const name = prompt('item name:');
+    if (!name) return;
+    const amt = parseFloat(prompt('amount:') || 0) || 0;
+    const items = S.get('pastDue', []);
+    items.push({ name, amount: amt, paid: false });
+    S.set('pastDue', items);
+    renderPastDue();
+}
+
+function togglePastDue(i) {
+    const items = S.get('pastDue', []);
+    items[i].paid = !items[i].paid;
+    S.set('pastDue', items);
+    renderPastDue();
+}
+
+function renderBalances() {
+    const b = S.get('balances', { checking: 0, savings: 0, safe: 0 });
+    document.getElementById('balancesDisplay').innerHTML = `
+        <div class="row"><span class="row-label">checking</span><span class="row-value">$${(+b.checking).toLocaleString()}</span></div>
+        <div class="row"><span class="row-label">savings</span><span class="row-value">$${(+b.savings).toLocaleString()}</span></div>
+        <div class="row"><span class="row-label">safe</span><span class="row-value">$${(+b.safe).toLocaleString()}</span></div>
+    `;
+}
+
+function editBalances() {
+    const b = S.get('balances', { checking: 0, savings: 0, safe: 0 });
+    ['checking','savings','safe'].forEach(k => {
+        const v = prompt(k + ':', b[k]);
+        if (v !== null) b[k] = parseFloat(v) || 0;
+    });
+    S.set('balances', b);
+    renderBalances();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// LOAN REHAB
+// ══════════════════════════════════════════════════════════════════════════
+const defaultLoanActions = [
+    { text: 'confirm in-school deferment paperwork submitted to Nelnet', date: 'asap', done: false },
+    { text: 'get written deferment confirmation before July 8', date: 'before 7/8', done: false },
+    { text: 'call Nelnet re: past-due $591.79 — discuss options', date: '6/25', done: false },
+    { text: 'contact CLC financial aid re: $8,319 balance urgency', date: '6/28', done: false },
+    { text: 'if deferment not confirmed, set up payment plan', date: '7/1', done: false },
+    { text: 'verify Loyola SCPS per-credit rate (gpem@luc.edu)', date: 'ongoing', done: false },
+    { text: 'sort health insurance: reinstate or re-enroll marketplace', date: 'ongoing', done: false },
+];
+
+function renderLoan() {
+    const actions = S.get('loanActions', defaultLoanActions);
+    document.getElementById('loanActions').innerHTML = actions.map((a, i) => `
+        <div class="action-item">
+            <input type="checkbox" ${a.done ? 'checked' : ''} onchange="toggleLoanAction(${i})"
+                style="margin-top: 4px; accent-color: var(--teal); width:16px; height:16px; flex-shrink:0; cursor:pointer;">
+            <div style="flex: 1;">
+                <div class="action-text" style="${a.done ? 'text-decoration:line-through; opacity:0.45;' : ''}">${a.text}</div>
+                <div class="action-date">${a.date}</div>
+            </div>
+        </div>
+    `).join('');
+    document.getElementById('loanNotes').value = S.get('loanNotes', '');
+}
+
+function toggleLoanAction(i) {
+    const actions = S.get('loanActions', defaultLoanActions);
+    actions[i].done = !actions[i].done;
+    S.set('loanActions', actions);
+    renderLoan();
+}
+
+function addLoanAction() {
+    const text = document.getElementById('newActionText').value.trim();
+    if (!text) return;
+    const actions = S.get('loanActions', defaultLoanActions);
+    actions.push({ text, date: 'new', done: false });
+    S.set('loanActions', actions);
+    document.getElementById('newActionText').value = '';
+    renderLoan();
+}
+
+function saveLoanNotes() {
+    S.set('loanNotes', document.getElementById('loanNotes').value);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// APARTMENT
+// ══════════════════════════════════════════════════════════════════════════
+const defaultHouseItems = [
+    // small items ~$485
+    { name: 'dish soap, sponges, cleaning supplies', cost: 40, checked: false },
+    { name: 'toilet paper, paper towels (stock up)', cost: 25, checked: false },
+    { name: 'laundry detergent',         cost: 20, checked: false },
+    { name: 'trash cans + bags',          cost: 30, checked: false },
+    { name: 'shower curtain + rings',     cost: 25, checked: false },
+    { name: 'bath towels (2 sets)',        cost: 40, checked: false },
+    { name: 'hand soap + dispensers',     cost: 15, checked: false },
+    { name: 'kitchen towels',             cost: 15, checked: false },
+    { name: 'hangers (50 pack)',           cost: 12, checked: false },
+    { name: 'storage bins / baskets',     cost: 35, checked: false },
+    { name: 'command strips + hooks',     cost: 15, checked: false },
+    { name: 'light bulbs (variety pack)', cost: 20, checked: false },
+    { name: 'extension cords / power strips', cost: 30, checked: false },
+    { name: 'first aid kit',              cost: 20, checked: false },
+    { name: 'basic toolkit',              cost: 25, checked: false },
+    { name: 'scissors, tape, pens',       cost: 18, checked: false },
+    { name: 'can opener, peeler, basics', cost: 20, checked: false },
+    { name: 'plates, bowls, mugs (set)',   cost: 30, checked: false },
+    { name: 'pots + pans (starter set)',   cost: 50, checked: false },
+    // furniture ~$960
+    { name: 'bed frame',                  cost: 150, checked: false },
+    { name: 'dresser',                    cost: 200, checked: false },
+    { name: 'desk',                       cost: 150, checked: false },
+    { name: 'desk chair',                 cost: 100, checked: false },
+    { name: 'lamps (2)',                   cost: 80,  checked: false },
+    { name: 'nightstand',                 cost: 80,  checked: false },
+    { name: 'small bookshelf',            cost: 60,  checked: false },
+    { name: 'mirror',                     cost: 50,  checked: false },
+    { name: 'floor rug',                  cost: 90,  checked: false },
+];
+
+function renderApartment() {
+    const days = Math.max(0, daysUntil('2026-08-01'));
+    document.getElementById('apartCountdown').innerHTML = `
+        <div class="countdown-n">${days}</div>
+        <div class="countdown-lbl">days until aug 1</div>
+    `;
+
+    const items = S.get('houseItems', defaultHouseItems);
+    const total = items.filter(i => !i.checked).reduce((s, i) => s + i.cost, 0);
+    document.getElementById('itemsTotal').textContent = '$' + total.toLocaleString();
+
+    document.getElementById('houseItems').innerHTML = items.map((item, i) => `
+        <div class="check-item ${item.checked ? 'done' : ''}">
+            <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleHouseItem(${i})">
+            <div class="item-label">${item.name}</div>
+            <div class="item-meta">$${item.cost}</div>
+        </div>
+    `).join('');
+
+    document.getElementById('apartNotes').value = S.get('apartNotes', '');
+}
+
+function toggleHouseItem(i) {
+    const items = S.get('houseItems', defaultHouseItems);
+    items[i].checked = !items[i].checked;
+    S.set('houseItems', items);
+    const total = items.filter(x => !x.checked).reduce((s, x) => s + x.cost, 0);
+    document.getElementById('itemsTotal').textContent = '$' + total.toLocaleString();
+    const el = document.querySelectorAll('#houseItems .check-item')[i];
+    if (el) el.className = 'check-item' + (items[i].checked ? ' done' : '');
+}
+
+function addHouseItem() {
+    const name = document.getElementById('newItemName').value.trim();
+    const cost = parseFloat(document.getElementById('newItemCost').value) || 0;
+    if (!name) return;
+    const items = S.get('houseItems', defaultHouseItems);
+    items.push({ name, cost, checked: false });
+    S.set('houseItems', items);
+    document.getElementById('newItemName').value = '';
+    document.getElementById('newItemCost').value = '';
+    renderApartment();
+}
+
+function saveApartNotes() {
+    S.set('apartNotes', document.getElementById('apartNotes').value);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ROUTINE
+// ══════════════════════════════════════════════════════════════════════════
+const weekRoutineData = [
+    { day: 'sunday',            blocks: [{ time: 'noon – 4pm', lbl: 'school block', tag: 'school' }, { time: 'evening', lbl: 'work shift', tag: 'work' }] },
+    { day: 'monday',            blocks: [{ time: 'noon – 4pm', lbl: 'school block', tag: 'school' }, { time: '8pm – close', lbl: 'work', tag: 'work' }] },
+    { day: 'tuesday',           blocks: [{ time: 'noon – 4pm', lbl: 'school block', tag: 'school' }, { time: '5:30 – 8:30pm', lbl: 'class', tag: 'school' }] },
+    { day: 'wednesday ✦',       blocks: [{ time: 'noon – 4pm', lbl: 'school block', tag: 'school' }, { time: 'evening', lbl: 'sacred — no plans', tag: 'personal' }] },
+    { day: 'thursday',          blocks: [{ time: 'noon – 4pm', lbl: 'school block', tag: 'school' }, { time: 'afternoon', lbl: 'gym', tag: 'gym' }] },
+    { day: 'friday',            blocks: [{ time: 'noon – 4pm', lbl: 'school block', tag: 'school' }, { time: 'afternoon', lbl: 'gym', tag: 'gym' }] },
+    { day: 'saturday',          blocks: [{ time: 'noon – 4pm', lbl: 'school block', tag: 'school' }, { time: 'evening', lbl: 'planned social', tag: 'personal' }] },
+];
+
+function renderRoutine() {
+    const todayDow = new Date().getDay();
+    document.getElementById('weekRoutine').innerHTML = weekRoutineData.map((d, i) => `
+        <div class="card routine-day" style="margin-bottom: 8px;">
+            <div class="routine-day-hdr">
+                ${d.day}
+                ${i === todayDow ? '<span class="today-badge">today</span>' : ''}
+            </div>
+            ${d.blocks.map(b => `
+                <div class="sched-item">
+                    <div class="sched-time">${b.time}</div>
+                    <div>
+                        <div class="sched-lbl">${b.lbl}</div>
+                        <span class="tag tag-${b.tag}">${b.tag}</span>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `).join('');
+
+    renderGym();
+}
+
+function renderGym() {
+    const wk = weekStartKey();
+    const gymData = S.get('gym-' + wk, {});
+    const days = ['sun','mon','tue','wed','thu','fri','sat'];
+    let count = 0;
+
+    document.getElementById('gymGrid').innerHTML = days.map((d, i) => {
+        const st = gymData[i] || 'neutral';
+        if (st === 'hit') count++;
+        return `<div class="gym-day ${st === 'hit' ? 'hit' : st === 'skip' ? 'skip' : ''}" onclick="cycleGym(${i})">${d}</div>`;
+    }).join('');
+
+    document.getElementById('gymCount').textContent = count;
+}
+
+function cycleGym(i) {
+    const wk = weekStartKey();
+    const gymData = S.get('gym-' + wk, {});
+    const cur = gymData[i] || 'neutral';
+    gymData[i] = cur === 'neutral' ? 'hit' : cur === 'hit' ? 'skip' : 'neutral';
+    S.set('gym-' + wk, gymData);
+    renderGym();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// RESET (per tab)
+// ══════════════════════════════════════════════════════════════════════════
+function resetTab(tab) {
+    if (!confirm('clear all ' + tab + ' data? this cannot be undone.')) return;
+    const keyMap = {
+        finances: ['weeklyIncome','saveTier','pastDue','balances'],
+        loan:     ['loanActions','loanNotes'],
+        apartment:['houseItems','apartNotes'],
+        routine:  Object.keys(localStorage).filter(k => k.startsWith('gym-')),
+    };
+    (keyMap[tab] || []).forEach(k => S.del(k));
+    if (tab === 'finances') renderFinances();
+    if (tab === 'loan')     renderLoan();
+    if (tab === 'apartment') renderApartment();
+    if (tab === 'routine')  renderRoutine();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════════════
+renderHome();
+loadJournal();
+renderSchool();
+renderFinances();
+renderLoan();
+renderApartment();
+renderRoutine();
+
+// Service worker
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
