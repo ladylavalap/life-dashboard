@@ -984,6 +984,16 @@ let activeFilter = 'all';
 
 function getAssigns() { return S.get('assignments', defaultAssignments); }
 
+function checkAssign(id, checked) {
+    const arr = getAssigns();
+    const a = arr.find(x => x.id === id);
+    if (!a) return;
+    a.status = checked ? 'done' : 'pending';
+    S.set('assignments', arr);
+    renderSchool();
+    renderHome();
+}
+
 function bumpStatus(id) {
     const arr = getAssigns();
     const a = arr.find(x => x.id === id);
@@ -991,7 +1001,7 @@ function bumpStatus(id) {
     a.status = a.status === 'pending' ? 'inprogress' : a.status === 'inprogress' ? 'done' : 'pending';
     S.set('assignments', arr);
     renderSchool();
-    renderHome(); // update quick glance
+    renderHome();
 }
 
 function setFilter(f) {
@@ -1029,13 +1039,13 @@ function renderSchool() {
             ${items.map(a => `
                 <div class="assign-item">
                     <div class="assign-top">
-                        <div class="course-dot" style="background: ${courseColor[a.course]};"></div>
+                        <input type="checkbox" ${a.status === 'done' ? 'checked' : ''} onchange="checkAssign('${a.id}', this.checked)" style="margin-top:3px; width:16px; height:16px; flex-shrink:0; accent-color:var(--teal); cursor:pointer;">
                         <div class="assign-name ${a.status === 'done' ? 'done' : ''}">${a.name}</div>
                         <button class="status-btn s-${a.status}" onclick="bumpStatus('${a.id}')">
                             ${a.status === 'inprogress' ? 'in progress' : a.status}
                         </button>
                     </div>
-                    <div class="assign-meta">
+                    <div class="assign-meta" style="padding-left:24px;">
                         <span>due ${fmtDate(a.due)}</span>
                         <span>${a.hours}h est</span>
                     </div>
